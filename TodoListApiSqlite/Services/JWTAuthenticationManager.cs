@@ -1,0 +1,55 @@
+﻿using Microsoft.IdentityModel.Tokens;
+using System.IdentityModel.Tokens.Jwt;
+using System.Security.Claims;
+using System.Text;
+using TodoListApiSqlite.Repositories;
+using System;
+using System.Data;
+using System.Diagnostics;
+
+namespace TodoListApiSqlite.Services
+{
+    public class JWTAuthenticationManager : IJWTAuthenticationManager
+    {
+
+        IDictionary<string, string> users = new Dictionary<string, string>
+        {
+            { "test1", "password1" },
+            { "test2", "password2" }
+        };
+        // TODO: chuj dupa zrobic tak zeby to bylo zaciagance nie 
+        private readonly string tokenKey = "tajny_klucz_szyfrujacy";
+
+        private readonly IUserRepository _userRepository;
+
+        public JWTAuthenticationManager(IUserRepository userRepository)
+        {
+            _userRepository = userRepository;
+        }
+
+        public string Authenticate(string email, string password)
+        {
+            var user = _userRepository.GetUser(email, password);
+            if (user == null)
+            {
+                return null;
+            }
+
+            var tokenHandler = new JwtSecurityTokenHandler();
+            var key = Encoding.ASCII.GetBytes(tokenKey);
+            var tokenDescriptor = new SecurityTokenDescriptor
+            {
+                Subject = new ClaimsIdentity(new Claim[]
+                {
+                new Claim(ClaimTypes.Name, email)
+                }),
+                Expires = DateTime.UtcNow.AddHours(1),
+                SigningCredentials = new SigningCredentials(
+                    new SymmetricSecurityKey(key),
+                    SecurityAlgorithms.HmacSha256Signature)
+            };
+            var token = tokenHandler.CreateToken(tokenDescriptor);
+            return tokenHandler.WriteToken(token);
+        }
+    }
+}
