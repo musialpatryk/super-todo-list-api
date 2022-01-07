@@ -1,1 +1,15 @@
 Update-Database
+Add Connection String =>
+Data source=../Database/northwind.sqlite
+
+Packages to install =>
+dotnet add package Microsoft.EntityFrameworkCore.Design
+dotnet add package Microsoft.EntityFrameworkCore.Sqlite
+dotnet add package Microsoft.AspNetCore.Mvc.NewtonsoftJson
+
+Install & Update dotnet EF tool =>
+dotnet tool install --global dotnet-ef
+dotnet tool update --global dotnet-ef
+
+Scaffold SQLite Database =>
+dotnet ef dbcontext scaffold Name=NorthwindDB Microsoft.EntityFrameworkCore.Sqlite --output-dir Models --context-dir Data --namespace Northwind.Models --context-namespace Northwind.Data --context NorthwindContext -f --no-onconfiguring
