@@ -18,13 +18,16 @@ namespace TodoListApiSqlite.Services
             { "test2", "password2" }
         };
         // TODO: chuj dupa zrobic tak zeby to bylo zaciagance nie 
-        private readonly string tokenKey = "tajny_klucz_szyfrujacy";
+        private readonly string tokenKey;
 
         private readonly IUserRepository _userRepository;
 
-        public JWTAuthenticationManager(IUserRepository userRepository)
+        // private readonly IConfiguration Configuration;
+
+        public JWTAuthenticationManager(IUserRepository userRepository, IConfiguration configuration)
         {
             _userRepository = userRepository;
+            tokenKey = configuration["TokenSecret"];
         }
 
         public string Authenticate(string email, string password)
