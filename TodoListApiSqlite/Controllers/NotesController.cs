@@ -1,10 +1,12 @@
-﻿using Microsoft.AspNetCore.Authorization;
+﻿using System.Configuration;
+using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.AspNetCore.Mvc.Rendering;
 using Microsoft.EntityFrameworkCore;
 using TodoListApiSqlite.Data;
 using TodoListApiSqlite.Dtos;
 using TodoListApiSqlite.Models;
+using TodoListApiSqlite.Repositories;
 using TodoListApiSqlite.RequestModel;
 using TodoListApiSqlite.Services;
 
@@ -49,14 +51,25 @@ namespace TodoListApiSqlite.Controllers
         // To protect from overposting attacks, enable the specific properties you want to bind to.
         // For more details, see http://go.microsoft.com/fwlink/?LinkId=317598.
         [HttpPost]
-        public async Task<ActionResult<NoteDto>> Create([Bind("Id,Name,Description,Priority,GroupId")] NoteModel noteModel)
+        public async Task<ActionResult<NoteDto>> Create([FromBody] NoteModel noteModel)
         {
-            if (ModelState.IsValid)
+            if (!ModelState.IsValid)
             {
-                Note note = _noteService.Create(noteModel);
-                return Ok(NoteDto.Create(note));
+                return BadRequest();
             }
-            return BadRequest();
+
+            User user = _context.Users.Where(u => u.Email == User.Identity.Name).FirstOrDefault();
+            if (_context.Groups.Find(noteModel.GroupId) == null)
+            {
+                return Conflict("Group does not exists");
+            }
+            if (user.Groups.Where(g => g.Id == noteModel.GroupId) == null)
+            {
+                return Conflict("User does not belong to this group");
+            }
+
+            Note note = _noteService.Create(noteModel);
+            return Ok(NoteDto.Create(note));
         }
 
         //         // GET: Notes/Details/5

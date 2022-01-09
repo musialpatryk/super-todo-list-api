@@ -8,7 +8,7 @@ namespace TodoListApiSqlite.Controllers
     [Route("/api/authenticate")]
     public class AuthenticationController : ControllerBase
     {
-
+        
         private IJWTAuthenticationManager _authenticationManager;
 
         public AuthenticationController(IJWTAuthenticationManager authenticationManager)
