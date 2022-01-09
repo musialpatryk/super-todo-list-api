@@ -1,8 +1,14 @@
-﻿using Microsoft.AspNetCore.Authorization;
+﻿using System.Configuration;
+using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
+using Microsoft.AspNetCore.Mvc.Rendering;
 using Microsoft.EntityFrameworkCore;
 using TodoListApiSqlite.Data;
 using TodoListApiSqlite.Dtos;
+using TodoListApiSqlite.Models;
+using TodoListApiSqlite.Repositories;
+using TodoListApiSqlite.RequestModel;
+using TodoListApiSqlite.Services;
 
 namespace TodoListApiSqlite.Controllers
 {
@@ -13,17 +19,26 @@ namespace TodoListApiSqlite.Controllers
     {
         private readonly TodoListApiContext _context;
 
-        public NotesController(TodoListApiContext context)
+        private readonly NoteService _noteService;
+
+        public NotesController(TodoListApiContext context, NoteService noteService)
         {
             _context = context;
+            _noteService = noteService;
         }
 
         [HttpGet]
-        public async Task<ActionResult<IEnumerable<NoteDto>>> Index()
+        public async Task<ActionResult<IEnumerable<NoteDto>>> GetList()
         {
             return await _context.Notes.Select(x => NoteDto.Create(x)).ToListAsync();
         }
 
+        // [HttpPost]
+        // public async Task<ActionResult<NoteDto>> Create([FromBody] NoteModel model)
+        // {
+        //     
+        // }
+        
         // GET: Notes/Create
         /*[HttpPost]
         public IActionResult Create()
@@ -32,129 +47,137 @@ namespace TodoListApiSqlite.Controllers
             return View();
         }*/
 
-        /*// POST: Notes/Create
+        // POST: Notes/Create
         // To protect from overposting attacks, enable the specific properties you want to bind to.
         // For more details, see http://go.microsoft.com/fwlink/?LinkId=317598.
         [HttpPost]
-        [ValidateAntiForgeryToken]
-        public async Task<IActionResult> Create([Bind("Id,Name,Description,Priority,GroupId")] Note note)
+        public async Task<ActionResult<NoteDto>> Create([FromBody] NoteModel noteModel)
         {
-            if (ModelState.IsValid)
+            if (!ModelState.IsValid)
             {
-                _context.Add(note);
-                await _context.SaveChangesAsync();
-                return RedirectToAction(nameof(Index));
+                return BadRequest();
             }
-            ViewData["GroupId"] = new SelectList(_context.Groups, "Id", "Id", note.GroupId);
-            return View(note);
+
+            User user = _context.Users.Where(u => u.Email == User.Identity.Name).FirstOrDefault();
+            if (_context.Groups.Find(noteModel.GroupId) == null)
+            {
+                return Conflict("Group does not exists");
+            }
+            if (user.Groups.Where(g => g.Id == noteModel.GroupId) == null)
+            {
+                return Conflict("User does not belong to this group");
+            }
+
+            Note note = _noteService.Create(noteModel);
+            return Ok(NoteDto.Create(note));
         }
 
-                // GET: Notes/Details/5
-        public async Task<IActionResult> Details(int? id)
-        {
-            if (id == null)
-            {
-                return NotFound();
-            }
+        //         // GET: Notes/Details/5
+        // public async Task<IActionResult> Details(int? id)
+        // {
+        //     if (id == null)
+        //     {
+        //         return NotFound();
+        //     }
+        //
+        //     var note = await _context.Notes
+        //         .Include(n => n.Group)
+        //         .FirstOrDefaultAsync(m => m.Id == id);
+        //     if (note == null)
+        //     {
+        //         return NotFound();
+        //     }
+        //
+        //     return View(note);
+        // }
+        //
+        // // GET: Notes/Edit/5
+        // public async Task<IActionResult> Edit(int? id)
+        // {
+        //     if (id == null)
+        //     {
+        //         return NotFound();
+        //     }
+        //
+        //     var note = await _context.Notes.FindAsync(id);
+        //     if (note == null)
+        //     {
+        //         return NotFound();
+        //     }
+        //     ViewData["GroupId"] = new SelectList(_context.Groups, "Id", "Id", note.GroupId);
+        //     return View(note);
+        // }
+        //
+        // // POST: Notes/Edit/5
+        // // To protect from overposting attacks, enable the specific properties you want to bind to.
+        // // For more details, see http://go.microsoft.com/fwlink/?LinkId=317598.
+        // [HttpPost]
+        // [ValidateAntiForgeryToken]
+        // public async Task<IActionResult> Edit(int id, [Bind("Id,Name,Description,Priority,GroupId")] Note note)
+        // {
+        //     if (id != note.Id)
+        //     {
+        //         return NotFound();
+        //     }
+        //
+        //     if (ModelState.IsValid)
+        //     {
+        //         try
+        //         {
+        //             _context.Update(note);
+        //             await _context.SaveChangesAsync();
+        //         }
+        //         catch (DbUpdateConcurrencyException)
+        //         {
+        //             if (!NoteExists(note.Id))
+        //             {
+        //                 return NotFound();
+        //             }
+        //             else
+        //             {
+        //                 throw;
+        //             }
+        //         }
+        //         return RedirectToAction(nameof(Index));
+        //     }
+        //     ViewData["GroupId"] = new SelectList(_context.Groups, "Id", "Id", note.GroupId);
+        //     return View(note);
+        // }
+        //
+        // // GET: Notes/Delete/5
+        // public async Task<IActionResult> Delete(int? id)
+        // {
+        //     if (id == null)
+        //     {
+        //         return NotFound();
+        //     }
+        //
+        //     var note = await _context.Notes
+        //         .Include(n => n.Group)
+        //         .FirstOrDefaultAsync(m => m.Id == id);
+        //     if (note == null)
+        //     {
+        //         return NotFound();
+        //     }
+        //
+        //     return View(note);
+        // }
+        //
+        // // POST: Notes/Delete/5
+        // [HttpPost, ActionName("Delete")]
+        // [ValidateAntiForgeryToken]
+        // public async Task<IActionResult> DeleteConfirmed(int id)
+        // {
+        //     var note = await _context.Notes.FindAsync(id);
+        //     _context.Notes.Remove(note);
+        //     await _context.SaveChangesAsync();
+        //     return RedirectToAction(nameof(Index));
+        // }
+        //
+        // private bool NoteExists(int id)
+        // {
+        //     return _context.Notes.Any(e => e.Id == id);
+        // }
 
-            var note = await _context.Notes
-                .Include(n => n.Group)
-                .FirstOrDefaultAsync(m => m.Id == id);
-            if (note == null)
-            {
-                return NotFound();
-            }
-
-            return View(note);
-        }
-
-        // GET: Notes/Edit/5
-        public async Task<IActionResult> Edit(int? id)
-        {
-            if (id == null)
-            {
-                return NotFound();
-            }
-
-            var note = await _context.Notes.FindAsync(id);
-            if (note == null)
-            {
-                return NotFound();
-            }
-            ViewData["GroupId"] = new SelectList(_context.Groups, "Id", "Id", note.GroupId);
-            return View(note);
-        }
-
-        // POST: Notes/Edit/5
-        // To protect from overposting attacks, enable the specific properties you want to bind to.
-        // For more details, see http://go.microsoft.com/fwlink/?LinkId=317598.
-        [HttpPost]
-        [ValidateAntiForgeryToken]
-        public async Task<IActionResult> Edit(int id, [Bind("Id,Name,Description,Priority,GroupId")] Note note)
-        {
-            if (id != note.Id)
-            {
-                return NotFound();
-            }
-
-            if (ModelState.IsValid)
-            {
-                try
-                {
-                    _context.Update(note);
-                    await _context.SaveChangesAsync();
-                }
-                catch (DbUpdateConcurrencyException)
-                {
-                    if (!NoteExists(note.Id))
-                    {
-                        return NotFound();
-                    }
-                    else
-                    {
-                        throw;
-                    }
-                }
-                return RedirectToAction(nameof(Index));
-            }
-            ViewData["GroupId"] = new SelectList(_context.Groups, "Id", "Id", note.GroupId);
-            return View(note);
-        }
-
-        // GET: Notes/Delete/5
-        public async Task<IActionResult> Delete(int? id)
-        {
-            if (id == null)
-            {
-                return NotFound();
-            }
-
-            var note = await _context.Notes
-                .Include(n => n.Group)
-                .FirstOrDefaultAsync(m => m.Id == id);
-            if (note == null)
-            {
-                return NotFound();
-            }
-
-            return View(note);
-        }
-
-        // POST: Notes/Delete/5
-        [HttpPost, ActionName("Delete")]
-        [ValidateAntiForgeryToken]
-        public async Task<IActionResult> DeleteConfirmed(int id)
-        {
-            var note = await _context.Notes.FindAsync(id);
-            _context.Notes.Remove(note);
-            await _context.SaveChangesAsync();
-            return RedirectToAction(nameof(Index));
-        }
-
-        private bool NoteExists(int id)
-        {
-            return _context.Notes.Any(e => e.Id == id);
-        }
-*/
     }
 }

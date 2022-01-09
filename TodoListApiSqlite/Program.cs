@@ -21,8 +21,13 @@ builder.Services.AddDbContext<TodoListApiContext>
 
 builder.Services.AddSingleton<IUserRepository, UserRepository>();
 builder.Services.AddSingleton<IJWTAuthenticationManager, JWTAuthenticationManager>();
+builder.Services.AddSingleton<NoteService>();
+builder.Services.AddSingleton<NoteRepository>();
 
-var key = Encoding.ASCII.GetBytes("tajny_klucz_szyfrujacy");
+var config = new ConfigurationBuilder()
+    .AddJsonFile("appsettings.json", optional: false)
+    .Build();
+var key = Encoding.ASCII.GetBytes(config["TokenSecret"]);
 
 builder.Services.AddAuthentication(JwtBearerDefaults.AuthenticationScheme)
 .AddJwtBearer(x =>
