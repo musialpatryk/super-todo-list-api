@@ -21,8 +21,12 @@ builder.Services.AddDbContext<TodoListApiContext>
 
 builder.Services.AddSingleton<IUserRepository, UserRepository>();
 builder.Services.AddSingleton<IJWTAuthenticationManager, JWTAuthenticationManager>();
+
 builder.Services.AddSingleton<NoteService>();
 builder.Services.AddSingleton<NoteRepository>();
+
+builder.Services.AddSingleton<GroupService>();
+builder.Services.AddSingleton<GroupRepository>();
 
 var config = new ConfigurationBuilder()
     .AddJsonFile("appsettings.json", optional: false)

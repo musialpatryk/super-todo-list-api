@@ -13,17 +13,15 @@ using TodoListApiSqlite.Services;
 namespace TodoListApiSqlite.Controllers
 {
     [Authorize]
-    [Route("[controller]")]
+    [Route("note")]
     [ApiController]
-    public class NotesController : ControllerBase
+    public class NotesController : ApiController
     {
-        private readonly TodoListApiContext _context;
-
+        
         private readonly NoteService _noteService;
 
-        public NotesController(TodoListApiContext context, NoteService noteService)
+        public NotesController(TodoListApiContext context, NoteService noteService): base(context)
         {
-            _context = context;
             _noteService = noteService;
         }
 
@@ -33,23 +31,6 @@ namespace TodoListApiSqlite.Controllers
             return await _context.Notes.Select(x => NoteDto.Create(x)).ToListAsync();
         }
 
-        // [HttpPost]
-        // public async Task<ActionResult<NoteDto>> Create([FromBody] NoteModel model)
-        // {
-        //     
-        // }
-        
-        // GET: Notes/Create
-        /*[HttpPost]
-        public IActionResult Create()
-        {
-            ViewData["GroupId"] = new SelectList(_context.Groups, "Id", "Id");
-            return View();
-        }*/
-
-        // POST: Notes/Create
-        // To protect from overposting attacks, enable the specific properties you want to bind to.
-        // For more details, see http://go.microsoft.com/fwlink/?LinkId=317598.
         [HttpPost]
         public async Task<ActionResult<NoteDto>> Create([FromBody] NoteModel noteModel)
         {
@@ -58,17 +39,39 @@ namespace TodoListApiSqlite.Controllers
                 return BadRequest();
             }
 
-            User user = _context.Users.Where(u => u.Email == User.Identity.Name).FirstOrDefault();
+            User user = GetUser();
             if (_context.Groups.Find(noteModel.GroupId) == null)
             {
                 return Conflict("Group does not exists");
             }
-            if (user.Groups.Where(g => g.Id == noteModel.GroupId) == null)
-            {
-                return Conflict("User does not belong to this group");
-            }
+            // if (user.Groups.Where(g => g.Id == noteModel.GroupId).FirstOrDefault() == null)
+            // {
+            //     return Conflict("User does not belong to this group");
+            // }
 
             Note note = _noteService.Create(noteModel);
+            return Ok(NoteDto.Create(note));
+        }
+
+        [HttpGet("{id}")]
+        public async Task<ActionResult<NoteDto>> Get(int? id)
+        {
+            
+            var note = await _context.Notes.FindAsync(id);
+            if (note == null)
+            {
+                return BadRequest("Note doesn't exists");
+            }
+            User user = GetUser();
+            if (user == null)
+            {
+                return Conflict("User does not exists");
+            }
+            // if (user.Groups.Where(g => g.Id == note.GroupId).SingleOrDefault() == null)
+            // {
+            //     return Conflict("User does not belong to this group");
+            // }
+
             return Ok(NoteDto.Create(note));
         }
 

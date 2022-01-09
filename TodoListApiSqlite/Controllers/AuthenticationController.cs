@@ -5,7 +5,7 @@ using TodoListApiSqlite.Services;
 namespace TodoListApiSqlite.Controllers
 {
     [ApiController]
-    [Route("/api/authenticate")]
+    [Route("/authenticate")]
     public class AuthenticationController : ControllerBase
     {
         

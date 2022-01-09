@@ -7,7 +7,7 @@ namespace TodoListApiSqlite.Models
     {
         public User()
         {
-            Groups = new HashSet<Group>();
+            Groups = new HashSet<GroupUser>();
         }
 
         public int Id { get; set; }
@@ -15,6 +15,6 @@ namespace TodoListApiSqlite.Models
         public string Password { get; set; } = null!;
         public string Name { get; set; } = null!;
 
-        public virtual ICollection<Group> Groups { get; set; }
+        public virtual ICollection<GroupUser> Groups { get; set; }
     }
 }

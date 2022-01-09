@@ -30,7 +30,7 @@ namespace TodoListApiSqlite.Services
             tokenKey = configuration["TokenSecret"];
         }
 
-        public string Authenticate(string email, string password)
+        public string? Authenticate(string email, string password)
         {
             var user = _userRepository.GetUser(email, password);
             if (user == null)

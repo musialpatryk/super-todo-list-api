@@ -2,6 +2,7 @@
 using System;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.EntityFrameworkCore.Infrastructure;
+using Microsoft.EntityFrameworkCore.Migrations;
 using Microsoft.EntityFrameworkCore.Storage.ValueConversion;
 using TodoListApiSqlite.Data;
 
@@ -10,12 +11,28 @@ using TodoListApiSqlite.Data;
 namespace TodoListApiSqlite.Migrations
 {
     [DbContext(typeof(TodoListApiContext))]
-    partial class TodoListApiContextModelSnapshot : ModelSnapshot
+    [Migration("20220109143039_GroupModelUpdate")]
+    partial class GroupModelUpdate
     {
-        protected override void BuildModel(ModelBuilder modelBuilder)
+        protected override void BuildTargetModel(ModelBuilder modelBuilder)
         {
 #pragma warning disable 612, 618
             modelBuilder.HasAnnotation("ProductVersion", "6.0.1");
+
+            modelBuilder.Entity("GroupUser", b =>
+                {
+                    b.Property<int>("GroupsId")
+                        .HasColumnType("INTEGER");
+
+                    b.Property<int>("UsersId")
+                        .HasColumnType("INTEGER");
+
+                    b.HasKey("GroupsId", "UsersId");
+
+                    b.HasIndex("UsersId");
+
+                    b.ToTable("GroupUser");
+                });
 
             modelBuilder.Entity("TodoListApiSqlite.Models.Group", b =>
                 {
@@ -30,21 +47,6 @@ namespace TodoListApiSqlite.Migrations
                     b.HasKey("Id");
 
                     b.ToTable("Groups");
-                });
-
-            modelBuilder.Entity("TodoListApiSqlite.Models.GroupUser", b =>
-                {
-                    b.Property<int>("GroupId")
-                        .HasColumnType("INTEGER");
-
-                    b.Property<int>("UserId")
-                        .HasColumnType("INTEGER");
-
-                    b.HasKey("GroupId", "UserId");
-
-                    b.HasIndex("UserId");
-
-                    b.ToTable("GroupUsers");
                 });
 
             modelBuilder.Entity("TodoListApiSqlite.Models.Note", b =>
@@ -96,23 +98,19 @@ namespace TodoListApiSqlite.Migrations
                     b.ToTable("Users");
                 });
 
-            modelBuilder.Entity("TodoListApiSqlite.Models.GroupUser", b =>
+            modelBuilder.Entity("GroupUser", b =>
                 {
-                    b.HasOne("TodoListApiSqlite.Models.Group", "Group")
-                        .WithMany("Users")
-                        .HasForeignKey("GroupId")
+                    b.HasOne("TodoListApiSqlite.Models.Group", null)
+                        .WithMany()
+                        .HasForeignKey("GroupsId")
                         .OnDelete(DeleteBehavior.Cascade)
                         .IsRequired();
 
-                    b.HasOne("TodoListApiSqlite.Models.User", "User")
-                        .WithMany("Groups")
-                        .HasForeignKey("UserId")
+                    b.HasOne("TodoListApiSqlite.Models.User", null)
+                        .WithMany()
+                        .HasForeignKey("UsersId")
                         .OnDelete(DeleteBehavior.Cascade)
                         .IsRequired();
-
-                    b.Navigation("Group");
-
-                    b.Navigation("User");
                 });
 
             modelBuilder.Entity("TodoListApiSqlite.Models.Note", b =>
@@ -129,13 +127,6 @@ namespace TodoListApiSqlite.Migrations
             modelBuilder.Entity("TodoListApiSqlite.Models.Group", b =>
                 {
                     b.Navigation("Notes");
-
-                    b.Navigation("Users");
-                });
-
-            modelBuilder.Entity("TodoListApiSqlite.Models.User", b =>
-                {
-                    b.Navigation("Groups");
                 });
 #pragma warning restore 612, 618
         }
