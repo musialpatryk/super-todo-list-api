@@ -26,9 +26,13 @@ namespace TodoListApiSqlite.Controllers
         }
 
         [HttpGet]
-        public async Task<ActionResult<IEnumerable<NoteDto>>> GetList()
+        public async Task<ActionResult<IEnumerable<NoteDto>>> GetList([FromQuery(Name="group")] int groupId)
         {
-            return await _context.Notes.Select(x => NoteDto.Create(x)).ToListAsync();
+            //TODO: Group -> User validation
+            return await _context.Notes
+                .Where(n => n.GroupId == groupId)
+                .Select(x => NoteDto.Create(x))
+                .ToListAsync();
         }
 
         [HttpPost]
@@ -63,10 +67,6 @@ namespace TodoListApiSqlite.Controllers
                 return BadRequest("Note doesn't exists");
             }
             User user = GetUser();
-            if (user == null)
-            {
-                return Conflict("User does not exists");
-            }
             // if (user.Groups.Where(g => g.Id == note.GroupId).SingleOrDefault() == null)
             // {
             //     return Conflict("User does not belong to this group");
