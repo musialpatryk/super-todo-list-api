@@ -1,4 +1,5 @@
 ﻿using System.Configuration;
+using Microsoft.AspNetCore.Authentication;
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.AspNetCore.Mvc.Rendering;
@@ -54,6 +55,33 @@ namespace TodoListApiSqlite.Controllers
             // }
 
             Note note = _noteService.Create(noteModel);
+            return Ok(NoteDto.Create(note));
+        }
+
+        [HttpPut("{id}")]
+        public async Task<ActionResult<NoteDto>> Update([FromBody] NoteModel model, int id)
+        {
+            if (!ModelState.IsValid)
+            {
+                return BadRequest();
+            }
+
+            User user = GetUser();
+            if (_context.Groups.Find(model.GroupId) == null)
+            {
+                return Conflict("Group does not exists");
+            }
+            // if (user.Groups.Where(g => g.Id == noteModel.GroupId).FirstOrDefault() == null)
+            // {
+            //     return Conflict("User does not belong to this group");
+            // }
+
+            Note note = _context.Notes.Find(id);
+            if (note == null)
+            {
+                return BadRequest("Note does not exists");
+            } 
+            note = _noteService.Update(model, note);
             return Ok(NoteDto.Create(note));
         }
 

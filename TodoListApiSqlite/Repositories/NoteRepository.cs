@@ -19,5 +19,15 @@ public class NoteRepository : AbstractRepository
             await context.SaveChangesAsync();
         }
     }
+
+    public async void UpdateNote(Note note)
+    {
+        using (var scope = serviceScopeFactory.CreateScope())
+        {
+            var context = scope.ServiceProvider.GetRequiredService<TodoListApiContext>();
+            context.Update(note);
+            await context.SaveChangesAsync();
+        }
+    }
     
 }

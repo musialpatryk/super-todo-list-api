@@ -23,6 +23,14 @@ public class NoteService
         return note;
     }
 
+    public Note Update(NoteModel model, Note note)
+    {
+        note = SetCommonFields(model, note);
+        
+        _noteRepository.UpdateNote(note);
+        return note;
+    }
+
     public Note SetCommonFields(NoteModel model, Note note)
     {
         note.Description = model.Description;
