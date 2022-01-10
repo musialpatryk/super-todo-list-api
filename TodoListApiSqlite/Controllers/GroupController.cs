@@ -39,7 +39,20 @@ public class GroupController : ApiController
         
         return users.ToList();
     }
-    
+
+    [HttpGet]
+    public async Task<ActionResult<IEnumerable<GroupDto>>> List()
+    {
+        var user = GetUser();
+        IEnumerable<Group> groups = _context
+            .GroupUsers
+            .Include(gu => gu.Group)
+            .Where(gu => gu.UserId == user.Id)
+            .Select(gu => gu.Group);
+
+        return groups.Select(g => GroupDto.Create(g)).ToList();
+    }
+
     // [HttpGet("{id}")]
     // public async Task<ActionResult<Group>> GetUsers(int id)
     // {
