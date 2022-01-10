@@ -19,6 +19,7 @@ builder.Services.AddSwaggerGen();
 builder.Services.AddDbContext<TodoListApiContext>
     (options => options.UseSqlite("Name=TodoListApiDB"));
 
+builder.Services.AddSingleton<UserService>();
 builder.Services.AddSingleton<IUserRepository, UserRepository>();
 builder.Services.AddSingleton<IJWTAuthenticationManager, JWTAuthenticationManager>();
 

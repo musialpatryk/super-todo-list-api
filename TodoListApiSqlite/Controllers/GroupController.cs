@@ -22,23 +22,23 @@ public class GroupController : ApiController
         _groupService = groupService;
     }
 
-    [HttpGet("{id}")]
-    public async Task<ActionResult<IEnumerable<User>>> GetUsers(int id)
-    {
+    // [HttpGet("{id}")]
+    // public async Task<ActionResult<IEnumerable<User>>> GetUsers(int id)
+    // {
         // Group? group = _context.Groups.Find(id);
         // if (group == null)
         // {
         //     return Conflict("Group does not exists");
         // }
 
-        IEnumerable<User> users = _context
-            .GroupUsers
-            .Include(gu => gu.User)
-            .Where(gu => gu.GroupId == id)
-            .Select(gu => gu.User);
+        // IEnumerable<User> users = _context
+            // .GroupUsers
+            // .Include(gu => gu.User)
+            // .Where(gu => gu.GroupId == id)
+            // .Select(gu => gu.User);
         
-        return users.ToList();
-    }
+        // return users.ToList();
+    // }
 
     [HttpGet]
     public async Task<ActionResult<IEnumerable<GroupDto>>> List()

@@ -1,6 +1,8 @@
 ﻿using Microsoft.AspNetCore.Mvc;
 using TodoListApiSqlite.RequestModel;
 using TodoListApiSqlite.Services;
+using BCryptNet = BCrypt.Net.BCrypt;
+
 
 namespace TodoListApiSqlite.Controllers
 {
@@ -24,6 +26,9 @@ namespace TodoListApiSqlite.Controllers
                 return BadRequest();
             }
             var token = _authenticationManager.Authenticate(credentials.Email, credentials.Password);
+            var hash1 = BCryptNet.HashPassword("password1");
+            var hash2 = BCryptNet.HashPassword("password1");
+            var hash3 = BCryptNet.HashPassword("password1");
             if (token == null)
             {
                 return Unauthorized();

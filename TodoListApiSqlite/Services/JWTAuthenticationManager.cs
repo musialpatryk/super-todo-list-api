@@ -3,9 +3,7 @@ using System.IdentityModel.Tokens.Jwt;
 using System.Security.Claims;
 using System.Text;
 using TodoListApiSqlite.Repositories;
-using System;
-using System.Data;
-using System.Diagnostics;
+using BCryptNet = BCrypt.Net.BCrypt;
 
 namespace TodoListApiSqlite.Services
 {
@@ -32,8 +30,8 @@ namespace TodoListApiSqlite.Services
 
         public string? Authenticate(string email, string password)
         {
-            var user = _userRepository.GetUser(email, password);
-            if (user == null)
+            var user = _userRepository.GetUser(email);
+            if (user == null || !BCryptNet.Verify(password, user.Password))
             {
                 return null;
             }

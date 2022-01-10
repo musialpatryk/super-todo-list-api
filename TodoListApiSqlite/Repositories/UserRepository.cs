@@ -23,5 +23,24 @@ namespace TodoListApiSqlite.Repositories
             }
         }
 
+        public User? GetUser(string email)
+        {
+            using (var scope = _serviceScopeFactory.CreateScope())
+            {
+                var context = scope.ServiceProvider.GetRequiredService<TodoListApiContext>();
+                return context.Users.Where(u => u.Email == email).FirstOrDefault();
+            }
+        }
+        
+        public async void CreateUser(User user)
+        {
+            using (var scope = _serviceScopeFactory.CreateScope())
+            {
+                var context = scope.ServiceProvider.GetRequiredService<TodoListApiContext>();
+                await context.Users.AddAsync(user);
+                await context.SaveChangesAsync();
+            }
+        }
+
     }
 }
