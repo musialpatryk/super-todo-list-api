@@ -19,6 +19,8 @@ namespace TodoListApiSqlite.Models
         public string Password { get; set; } = null!;
         public string Name { get; set; } = null!;
 
+        public string InvitationLink { get; set; } = null!;
+
         public virtual ICollection<GroupUser> Groups { get; set; }
     }
 }

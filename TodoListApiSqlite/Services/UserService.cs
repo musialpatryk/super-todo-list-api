@@ -1,4 +1,5 @@
 using System.Security.Cryptography;
+using TodoListApiSqlite.Extensions;
 using TodoListApiSqlite.Models;
 using BCryptNet = BCrypt.Net.BCrypt;
 using TodoListApiSqlite.Repositories;
@@ -28,7 +29,7 @@ public class UserService
         user.Email = model.Email;
         user.Name = model.Name;
         user.Password = BCryptNet.HashPassword(model.Password);
-
+        user.InvitationLink = RandomStringGenerator.Generate(30);
         return user;
     }
 }
