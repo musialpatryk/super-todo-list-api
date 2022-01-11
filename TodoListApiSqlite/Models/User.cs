@@ -1,8 +1,12 @@
 ﻿using System;
 using System.Collections.Generic;
+using Microsoft.EntityFrameworkCore;
+using Microsoft.Win32.SafeHandles;
+using System.ComponentModel.DataAnnotations.Schema;
 
 namespace TodoListApiSqlite.Models
 {
+    [Index(nameof(User.Email), IsUnique = true)]
     public partial class User
     {
         public User()

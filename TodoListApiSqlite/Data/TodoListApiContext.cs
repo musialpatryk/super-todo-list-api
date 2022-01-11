@@ -38,6 +38,8 @@ namespace TodoListApiSqlite.Data
                 .HasOne(gu => gu.User)
                 .WithMany(u => u.Groups)
                 .HasForeignKey(u => u.UserId);
+
+            modelBuilder.Entity<User>().HasIndex(u => u.Email).IsUnique();
         }
     }
 }

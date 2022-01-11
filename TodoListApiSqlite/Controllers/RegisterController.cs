@@ -27,6 +27,11 @@ public class RegisterController : ApiController
         {
             return BadRequest("Something went wrong, try again later");
         }
+
+        if (_context.Users.Where(u => u.Email == model.Email).FirstOrDefault() != null)
+        {
+            return BadRequest("Email is already registered");
+        }
         _userService.Create(model);
         
         return Ok();
