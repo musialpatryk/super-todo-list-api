@@ -74,10 +74,12 @@ public class GroupController : ApiController
             return BadRequest();
         }
 
+        var user = GetUser();
+        model.AdministratorId = user.Id;
         Group group = _groupService.Create(model);
         var groupUser = new GroupUser();
-        groupUser.Group = group;
-        groupUser.User = GetUser();
+        groupUser.GroupId = group.Id;
+        groupUser.UserId = user.Id;
         _context.GroupUsers.Add(groupUser);
         await _context.SaveChangesAsync();
         return Ok(GroupDto.Create(group));
