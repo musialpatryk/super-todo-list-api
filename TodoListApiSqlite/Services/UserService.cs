@@ -1,4 +1,6 @@
 using System.Security.Cryptography;
+using NuGet.Packaging;
+using TodoListApiSqlite.Exceptions;
 using TodoListApiSqlite.Extensions;
 using TodoListApiSqlite.Models;
 using BCryptNet = BCrypt.Net.BCrypt;
@@ -20,16 +22,43 @@ public class UserService
     {
         var user = new User();
         user = SetCommonFields(model, user);
+        SetPassword(model.Password, user);
         _userRepository.CreateUser(user);
         return user;
     }
 
-    public User SetCommonFields(RegisterModel model, User user)
+    public User Edit(IUserModel model, User user)
     {
-        user.Email = model.Email;
-        user.Name = model.Name;
-        user.Password = BCryptNet.HashPassword(model.Password);
+        user = SetCommonFields(model, user);
+        return user;
+    }
+
+    public User SetCommonFields(IUserModel model, User user)
+    {
+        if (model.Email != null)
+        {
+            user.Email = model.Email;
+        }
+        if (model.Name != null)
+        {
+            user.Name = model.Name;
+        }
         user.InvitationLink = RandomStringGenerator.Generate(30);
         return user;
+    }
+
+    public User ChangePassword(PasswordChangeModel model, User user)
+    {
+        if (BCryptNet.HashPassword(model.OldPassword) != user.Password)
+        {
+            throw new PasswordNotCorrectException("Password is not correct");
+        }
+        SetPassword(model.OldPassword, user);
+        return user;
+    }
+
+    public void SetPassword(string password, User user)
+    {
+        user.Password = BCryptNet.HashPassword(password);
     }
 }

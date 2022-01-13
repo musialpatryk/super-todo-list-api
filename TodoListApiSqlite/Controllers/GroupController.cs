@@ -141,13 +141,7 @@ public class GroupController : ApiController
         }
 
         this._context.Groups.Remove(group);
-
+        await _context.SaveChangesAsync();
         return Ok();
     }
-
-    // [HttpGet("{id}")]
-    // public Task<ActionResult<GroupDto>> Index()
-    // {
-    //     
-    // }
 }

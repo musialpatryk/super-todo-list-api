@@ -31,7 +31,6 @@ namespace TodoListApiSqlite.Controllers
         [HttpGet]
         public async Task<ActionResult<IEnumerable<NoteDto>>> GetList([FromQuery(Name="group")] int groupId)
         {
-            //TODO: Group -> User validation
             return await _context.Notes
                 .Where(n => n.GroupId == groupId)
                 .Select(x => NoteDto.Create(x))
