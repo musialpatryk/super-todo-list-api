@@ -5,6 +5,7 @@ using Microsoft.EntityFrameworkCore;
 using TodoListApiSqlite.Data;
 using TodoListApiSqlite.Dtos;
 using TodoListApiSqlite.Models;
+using TodoListApiSqlite.Repositories;
 using TodoListApiSqlite.RequestModel;
 using TodoListApiSqlite.Services;
 
@@ -17,10 +18,12 @@ public class GroupController : ApiController
 {
 
     private readonly GroupService _groupService;
-    
-    public GroupController(TodoListApiContext context, GroupService groupService) : base(context)
+    private readonly GroupUserRepository _groupUserRepository;
+
+    public GroupController(TodoListApiContext context, GroupService groupService, GroupUserRepository groupUserRepository) : base(context)
     {
         _groupService = groupService;
+        _groupUserRepository = groupUserRepository;
     }
 
     // [HttpGet("{id}")]
@@ -105,7 +108,41 @@ public class GroupController : ApiController
         }
 
         _groupService.Edit(model, group);
-        return Ok(group);
+        return Ok(GroupDto.Create(group));
+    }
+
+    [HttpGet("{id}")]
+    public async Task<ActionResult<GroupDto>> Get(int id)
+    {
+        var group = _context.Groups.Find(id);
+        if (group == null)
+        {
+            return BadRequest("Group does not exists");
+        }
+        if (_groupUserRepository.UserBelongsToGroup(GetUser(), group))
+        {
+            return Conflict("User have no permission to view this group");
+        }
+
+        return Ok(GroupDto.Create(group));
+    }
+
+    [HttpDelete("{id}")]
+    public async Task<IActionResult> Delete(int id)
+    {
+        var group = _context.Groups.Find(id);
+        if (group == null)
+        {
+            return BadRequest("Group does not exists");
+        }
+        if (GetUser().Id != group.AdministratorId)
+        {
+            return Conflict("User have no permission to edit this group");
+        }
+
+        this._context.Groups.Remove(group);
+
+        return Ok();
     }
 
     // [HttpGet("{id}")]

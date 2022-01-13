@@ -29,6 +29,8 @@ builder.Services.AddSingleton<NoteRepository>();
 builder.Services.AddSingleton<GroupService>();
 builder.Services.AddSingleton<GroupRepository>();
 
+builder.Services.AddSingleton<GroupUserRepository>();
+
 var config = new ConfigurationBuilder()
     .AddJsonFile("appsettings.json", optional: false)
     .Build();

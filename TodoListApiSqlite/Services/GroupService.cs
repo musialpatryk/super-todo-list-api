@@ -34,7 +34,7 @@ public class GroupService
     private Group SetCommonFields(GroupModel model, Group group)
     {
         group.Name = model.Name;
-
+        group.AdministratorId = model.AdministratorId;
         return group;
     }
     
