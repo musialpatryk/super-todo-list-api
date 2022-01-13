@@ -20,10 +20,12 @@ namespace TodoListApiSqlite.Controllers
     {
         
         private readonly NoteService _noteService;
+        private readonly GroupUserRepository _groupUserRepository;
 
-        public NotesController(TodoListApiContext context, NoteService noteService): base(context)
+        public NotesController(TodoListApiContext context, NoteService noteService, GroupUserRepository groupUserRepository): base(context)
         {
             _noteService = noteService;
+            _groupUserRepository = groupUserRepository;
         }
 
         [HttpGet]
@@ -37,7 +39,7 @@ namespace TodoListApiSqlite.Controllers
         }
 
         [HttpPost]
-        public async Task<ActionResult<NoteDto>> Create([FromBody] NoteModel noteModel)
+        public async Task<ActionResult<NoteDto>> Create([FromBody] NoteModel model)
         {
             if (!ModelState.IsValid)
             {
@@ -45,16 +47,17 @@ namespace TodoListApiSqlite.Controllers
             }
 
             User user = GetUser();
-            if (_context.Groups.Find(noteModel.GroupId) == null)
+            var group = _context.Groups.Find(model.GroupId);
+            if (group == null)
             {
                 return Conflict("Group does not exists");
             }
-            // if (user.Groups.Where(g => g.Id == noteModel.GroupId).FirstOrDefault() == null)
-            // {
-            //     return Conflict("User does not belong to this group");
-            // }
+            if (_groupUserRepository.UserBelongsToGroup(user, group))
+            {
+                return Conflict("User does not belong to this group");
+            }
 
-            Note note = _noteService.Create(noteModel);
+            Note note = _noteService.Create(model);
             return Ok(NoteDto.Create(note));
         }
 
@@ -67,14 +70,15 @@ namespace TodoListApiSqlite.Controllers
             }
 
             User user = GetUser();
-            if (_context.Groups.Find(model.GroupId) == null)
+            var group = _context.Groups.Find(model.GroupId);
+            if (group == null)
             {
                 return Conflict("Group does not exists");
             }
-            // if (user.Groups.Where(g => g.Id == noteModel.GroupId).FirstOrDefault() == null)
-            // {
-            //     return Conflict("User does not belong to this group");
-            // }
+            if (_groupUserRepository.UserBelongsToGroup(user, group))
+            {
+                return Conflict("User does not belong to this group");
+            }
 
             Note note = _context.Notes.Find(id);
             if (note == null)
@@ -95,120 +99,32 @@ namespace TodoListApiSqlite.Controllers
                 return BadRequest("Note doesn't exists");
             }
             User user = GetUser();
-            // if (user.Groups.Where(g => g.Id == note.GroupId).SingleOrDefault() == null)
-            // {
-            //     return Conflict("User does not belong to this group");
-            // }
+            var group = _context.Groups.Find(note.GroupId);
+            if (_groupUserRepository.UserBelongsToGroup(user, group))
+            {
+                return Conflict("User does not belong to this group");
+            }
 
             return Ok(NoteDto.Create(note));
         }
 
-        //         // GET: Notes/Details/5
-        // public async Task<IActionResult> Details(int? id)
-        // {
-        //     if (id == null)
-        //     {
-        //         return NotFound();
-        //     }
-        //
-        //     var note = await _context.Notes
-        //         .Include(n => n.Group)
-        //         .FirstOrDefaultAsync(m => m.Id == id);
-        //     if (note == null)
-        //     {
-        //         return NotFound();
-        //     }
-        //
-        //     return View(note);
-        // }
-        //
-        // // GET: Notes/Edit/5
-        // public async Task<IActionResult> Edit(int? id)
-        // {
-        //     if (id == null)
-        //     {
-        //         return NotFound();
-        //     }
-        //
-        //     var note = await _context.Notes.FindAsync(id);
-        //     if (note == null)
-        //     {
-        //         return NotFound();
-        //     }
-        //     ViewData["GroupId"] = new SelectList(_context.Groups, "Id", "Id", note.GroupId);
-        //     return View(note);
-        // }
-        //
-        // // POST: Notes/Edit/5
-        // // To protect from overposting attacks, enable the specific properties you want to bind to.
-        // // For more details, see http://go.microsoft.com/fwlink/?LinkId=317598.
-        // [HttpPost]
-        // [ValidateAntiForgeryToken]
-        // public async Task<IActionResult> Edit(int id, [Bind("Id,Name,Description,Priority,GroupId")] Note note)
-        // {
-        //     if (id != note.Id)
-        //     {
-        //         return NotFound();
-        //     }
-        //
-        //     if (ModelState.IsValid)
-        //     {
-        //         try
-        //         {
-        //             _context.Update(note);
-        //             await _context.SaveChangesAsync();
-        //         }
-        //         catch (DbUpdateConcurrencyException)
-        //         {
-        //             if (!NoteExists(note.Id))
-        //             {
-        //                 return NotFound();
-        //             }
-        //             else
-        //             {
-        //                 throw;
-        //             }
-        //         }
-        //         return RedirectToAction(nameof(Index));
-        //     }
-        //     ViewData["GroupId"] = new SelectList(_context.Groups, "Id", "Id", note.GroupId);
-        //     return View(note);
-        // }
-        //
-        // // GET: Notes/Delete/5
-        // public async Task<IActionResult> Delete(int? id)
-        // {
-        //     if (id == null)
-        //     {
-        //         return NotFound();
-        //     }
-        //
-        //     var note = await _context.Notes
-        //         .Include(n => n.Group)
-        //         .FirstOrDefaultAsync(m => m.Id == id);
-        //     if (note == null)
-        //     {
-        //         return NotFound();
-        //     }
-        //
-        //     return View(note);
-        // }
-        //
-        // // POST: Notes/Delete/5
-        // [HttpPost, ActionName("Delete")]
-        // [ValidateAntiForgeryToken]
-        // public async Task<IActionResult> DeleteConfirmed(int id)
-        // {
-        //     var note = await _context.Notes.FindAsync(id);
-        //     _context.Notes.Remove(note);
-        //     await _context.SaveChangesAsync();
-        //     return RedirectToAction(nameof(Index));
-        // }
-        //
-        // private bool NoteExists(int id)
-        // {
-        //     return _context.Notes.Any(e => e.Id == id);
-        // }
+        [HttpDelete("{id}")]
+        public async Task<IActionResult> Delete(int id)
+        {
+            var note = await _context.Notes.FindAsync(id);
+            if (note == null)
+            {
+                return BadRequest("Note doesn't exists");
+            }
+            User user = GetUser();
+            var group = _context.Groups.Find(note.GroupId);
+            if (_groupUserRepository.UserBelongsToGroup(user, group))
+            {
+                return Conflict("User does not belong to this group");
+            }
 
+            _context.Notes.Remove(note);
+            return Ok();
+        }
     }
 }
