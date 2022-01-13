@@ -15,7 +15,8 @@ public class GroupUserRepository : AbstractRepository
         using (var scope = serviceScopeFactory.CreateScope())
         {
             var context = scope.ServiceProvider.GetRequiredService<TodoListApiContext>();
-            return null != context.GroupUsers.Where(gu => gu.UserId == user.Id).Where(gu => gu.GroupId == group.Id).SingleOrDefault();
+            var groupUser = context.GroupUsers.Where(gu => gu.UserId == user.Id).Where(gu => gu.GroupId == group.Id).SingleOrDefault();
+            return null == groupUser;
         }
     }
     
