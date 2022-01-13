@@ -123,6 +123,7 @@ namespace TodoListApiSqlite.Controllers
             }
 
             _context.Notes.Remove(note);
+            await _context.SaveChangesAsync();
             return Ok();
         }
     }
