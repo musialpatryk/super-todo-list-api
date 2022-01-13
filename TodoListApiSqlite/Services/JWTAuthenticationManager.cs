@@ -36,13 +36,18 @@ namespace TodoListApiSqlite.Services
                 return null;
             }
 
+            return GenerateToken(email);
+        }
+
+        public string GenerateToken(string email)
+        {
             var tokenHandler = new JwtSecurityTokenHandler();
             var key = Encoding.ASCII.GetBytes(tokenKey);
             var tokenDescriptor = new SecurityTokenDescriptor
             {
                 Subject = new ClaimsIdentity(new Claim[]
                 {
-                new Claim(ClaimTypes.Name, email)
+                    new Claim(ClaimTypes.Name, email)
                 }),
                 Expires = DateTime.UtcNow.AddHours(1),
                 SigningCredentials = new SigningCredentials(

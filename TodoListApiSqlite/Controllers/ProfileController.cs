@@ -15,20 +15,28 @@ namespace TodoListApiSqlite.Controllers;
 public class ProfileController : ApiController
 {
     private readonly UserService _userService;
+    private readonly IJWTAuthenticationManager _authenticationManager;
 
-    public ProfileController(TodoListApiContext context, UserService userService): base(context)
+    public ProfileController(TodoListApiContext context, UserService userService, IJWTAuthenticationManager authenticationManager): base(context)
     {
         _userService = userService;
+        _authenticationManager = authenticationManager;
     }
 
     [HttpPut]
     public async Task<ActionResult<UserDto>> Edit([FromBody] UserModel model)
     {
+        if (model.Password != model.PasswordCheck)
+        {
+            return Conflict("Passwords not valid");
+        }
+        var token = _authenticationManager.Authenticate(GetUser().Email, model.Password);
         var user = _userService.Edit(model, GetUser());
         _context.Users.Update(user);
         await _context.SaveChangesAsync();
-
-        return Ok(UserDto.Create(user));
+        var userDto = UserDto.Create(user);
+        userDto.Token = token;
+        return Ok(userDto);
     }
 
     [HttpPost]
