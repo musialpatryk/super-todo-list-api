@@ -43,6 +43,5 @@ public class InvitationController : ApiController
         await _context.SaveChangesAsync();
 
         return Ok();
-
     }
 }

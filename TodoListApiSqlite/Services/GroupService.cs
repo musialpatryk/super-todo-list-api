@@ -23,6 +23,14 @@ public class GroupService
         return group;
     }
 
+    public Group Edit(GroupModel model, Group group)
+    {
+        SetCommonFields(model, group);
+        _groupRepository.UpdateGroup(group);
+
+        return group;
+    }
+
     private Group SetCommonFields(GroupModel model, Group group)
     {
         group.Name = model.Name;

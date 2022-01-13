@@ -1,5 +1,6 @@
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
+using Microsoft.AspNetCore.Mvc.ModelBinding;
 using Microsoft.EntityFrameworkCore;
 using TodoListApiSqlite.Data;
 using TodoListApiSqlite.Dtos;
@@ -83,6 +84,28 @@ public class GroupController : ApiController
         _context.GroupUsers.Add(groupUser);
         await _context.SaveChangesAsync();
         return Ok(GroupDto.Create(group));
+    }
+    
+    [HttpPut("{id}")]
+    public async Task<ActionResult<GroupDto>> Edit([FromBody] GroupModel model, int id)
+    {
+        if (!ModelState.IsValid)
+        {
+            return BadRequest();
+        }
+
+        var group = _context.Groups.Find(id);
+        if (group == null)
+        {
+            return BadRequest("Group does not exists");
+        }
+        if (GetUser().Id != group.AdministratorId)
+        {
+            return Conflict("User have no permission to edit this group");
+        }
+
+        _groupService.Edit(model, group);
+        return Ok(group);
     }
 
     // [HttpGet("{id}")]

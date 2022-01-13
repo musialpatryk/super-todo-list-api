@@ -19,5 +19,15 @@ public class GroupRepository : AbstractRepository
             await context.SaveChangesAsync();
         }
     }
+
+    public async void UpdateGroup(Group group)
+    {
+        using (var scope = serviceScopeFactory.CreateScope())
+        {
+            var context = scope.ServiceProvider.GetRequiredService<TodoListApiContext>();
+            context.Groups.Update(group);
+            await context.SaveChangesAsync();
+        }
+    }
     
 }
