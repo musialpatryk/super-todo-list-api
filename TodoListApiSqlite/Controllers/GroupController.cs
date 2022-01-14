@@ -204,7 +204,7 @@ public class GroupController : ApiController
 
         var groupUser = _context
             .GroupUsers
-            .Where(gu => gu.GroupId == group.Id).FirstOrDefault(gu => gu.UserId == GetUser().Id);
+            .Where(gu => gu.GroupId == group.Id).FirstOrDefault(gu => gu.UserId == user.Id);
 
         if (groupUser == null)
         {
