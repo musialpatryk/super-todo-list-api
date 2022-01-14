@@ -228,15 +228,11 @@ public class GroupController : ApiController
         }
 
         var user = GetUser();
-        if (user.Id != group.AdministratorId)
-        {
-            return Conflict("User have no permission to view this group");
-        }
         IEnumerable<User> users = _context
             .GroupUsers
             .Include(gu => gu.User)
             .Where(gu => gu.GroupId == group.Id)
             .Select(gu => gu.User);
-        return Ok(users.Select(u => UserDto.Create(user)));
+        return Ok(users.Select(u => UserDto.Create(u)));
     }
 }
