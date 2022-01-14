@@ -51,7 +51,7 @@ namespace TodoListApiSqlite.Controllers
             {
                 return Conflict("Group does not exists");
             }
-            if (_groupUserRepository.UserBelongsToGroup(user, group))
+            if (!_groupUserRepository.UserBelongsToGroup(user, group))
             {
                 return Conflict("User does not belong to this group");
             }
@@ -74,7 +74,7 @@ namespace TodoListApiSqlite.Controllers
             {
                 return Conflict("Group does not exists");
             }
-            if (_groupUserRepository.UserBelongsToGroup(user, group))
+            if (!_groupUserRepository.UserBelongsToGroup(user, group))
             {
                 return Conflict("User does not belong to this group");
             }
@@ -99,7 +99,7 @@ namespace TodoListApiSqlite.Controllers
             }
             User user = GetUser();
             var group = _context.Groups.Find(note.GroupId);
-            if (_groupUserRepository.UserBelongsToGroup(user, group))
+            if (!_groupUserRepository.UserBelongsToGroup(user, group))
             {
                 return Conflict("User does not belong to this group");
             }
@@ -117,7 +117,7 @@ namespace TodoListApiSqlite.Controllers
             }
             User user = GetUser();
             var group = _context.Groups.Find(note.GroupId);
-            if (_groupUserRepository.UserBelongsToGroup(user, group))
+            if (!_groupUserRepository.UserBelongsToGroup(user, group))
             {
                 return Conflict("User does not belong to this group");
             }

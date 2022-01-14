@@ -119,7 +119,7 @@ public class GroupController : ApiController
         {
             return BadRequest("Group does not exists");
         }
-        if (_groupUserRepository.UserBelongsToGroup(GetUser(), group))
+        if (!_groupUserRepository.UserBelongsToGroup(GetUser(), group))
         {
             return Conflict("User have no permission to view this group");
         }
@@ -143,5 +143,53 @@ public class GroupController : ApiController
         this._context.Groups.Remove(group);
         await _context.SaveChangesAsync();
         return Ok();
+    }
+
+    [HttpPost]
+    [Route("leave/{id}")]
+    public async Task<IActionResult> Leave(int id)
+    {
+        var group = _context.Groups.Find(id);
+        if (group == null)
+        {
+            return BadRequest("Group does not exists");
+        }
+
+        if (!_groupUserRepository.UserBelongsToGroup(GetUser(), group))
+        {
+            return Conflict("User does not belong to this group");
+        }
+
+        var groupUser = _context
+            .GroupUsers
+            .Where(gu => gu.GroupId == group.Id).FirstOrDefault(gu => gu.UserId == GetUser().Id);
+
+        _context.GroupUsers.Remove(groupUser);
+        _context.SaveChangesAsync();
+
+        return Ok();
+    }
+
+    [HttpGet]
+    [Route("get-users/{id}")]
+    public async Task<ActionResult<IEnumerable<UserDto>>> GetUsers(int id)
+    {
+        var group = _context.Groups.Find(id);
+        if (group == null)
+        {
+            return BadRequest("Group does not exists");
+        }
+
+        var user = GetUser();
+        if (user.Id != group.AdministratorId)
+        {
+            return Conflict("User have no permission to view this group");
+        }
+        IEnumerable<User> users = _context
+            .GroupUsers
+            .Include(gu => gu.User)
+            .Where(gu => gu.GroupId == group.Id)
+            .Select(gu => gu.User);
+        return Ok(users.Select(u => UserDto.Create(user)));
     }
 }
