@@ -160,12 +160,59 @@ public class GroupController : ApiController
             return Conflict("User does not belong to this group");
         }
 
+        if (GetUser().Id == group.AdministratorId)
+        {
+            return Conflict("Cannot remove administrator from group");
+        }
+        
+
         var groupUser = _context
             .GroupUsers
             .Where(gu => gu.GroupId == group.Id).FirstOrDefault(gu => gu.UserId == GetUser().Id);
 
         _context.GroupUsers.Remove(groupUser);
         _context.SaveChangesAsync();
+
+        return Ok();
+    }
+
+    [HttpPost]
+    [Route("{groupId}/kick/{userId}")]
+    public async Task<IActionResult> KickUser(int groupId, int userId)
+    {
+        var group = _context.Groups.Find(groupId);
+        if (group == null)
+        {
+            return BadRequest("Group does not exists");
+        }
+        
+        if (GetUser().Id != group.AdministratorId)
+        {
+            return Conflict("User have no permission to edit this group");
+        }
+
+        if (userId == group.AdministratorId)
+        {
+            return Conflict("Cannot remove administrator from group");
+        }
+
+        var user = _context.Users.Find(userId);
+        if (user == null)
+        {
+            return BadRequest("User does not exists");
+        }
+
+        var groupUser = _context
+            .GroupUsers
+            .Where(gu => gu.GroupId == group.Id).FirstOrDefault(gu => gu.UserId == GetUser().Id);
+
+        if (groupUser == null)
+        {
+            return BadRequest("User does not belong to this group");
+        }
+
+        _context.GroupUsers.Remove(groupUser);
+        await _context.SaveChangesAsync();
 
         return Ok();
     }
