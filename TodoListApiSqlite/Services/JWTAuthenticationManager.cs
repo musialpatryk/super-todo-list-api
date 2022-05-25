@@ -9,18 +9,8 @@ namespace TodoListApiSqlite.Services
 {
     public class JWTAuthenticationManager : IJWTAuthenticationManager
     {
-
-        IDictionary<string, string> users = new Dictionary<string, string>
-        {
-            { "test1", "password1" },
-            { "test2", "password2" }
-        };
-        // TODO: chuj dupa zrobic tak zeby to bylo zaciagance nie 
         private readonly string tokenKey;
-
         private readonly IUserRepository _userRepository;
-
-        // private readonly IConfiguration Configuration;
 
         public JWTAuthenticationManager(IUserRepository userRepository, IConfiguration configuration)
         {
